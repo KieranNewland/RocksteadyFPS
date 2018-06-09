@@ -4,7 +4,6 @@
 
 #include "Engine.h"
 #include "GameFramework/Character.h"
-#include "CustomCharacterMovementComponent.h"
 #include "CustomPlayerCharacter.generated.h"
 
 UCLASS()
@@ -27,11 +26,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	float GetPitch() { return m_nPitch; }
+	float GetYaw() { return m_nYaw; }
+
 private:
 
 	//Movement
-	UPROPERTY(VisibleAnywhere)
-		UCharacterMovementComponent * m_pMovementComponent;
 	void WalkForward(float);
 	void Strafe(float);
 
@@ -39,5 +39,7 @@ private:
 	void MouseHorizontal(float);
 	void MouseVertical(float);
 	void Fire();
-	
+
+	float m_nPitch;
+	float m_nYaw;
 };

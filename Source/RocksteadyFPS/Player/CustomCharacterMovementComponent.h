@@ -4,6 +4,7 @@
 
 #include "Engine.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "CustomPlayerCharacter.h"
 #include "CustomCharacterMovementComponent.generated.h"
 
 /**
@@ -17,5 +18,5 @@ class ROCKSTEADYFPS_API UCustomCharacterMovementComponent : public UCharacterMov
 private:
 		void OnMovementUpdated(float, const FVector&, const FVector&) override;
 	
-	
+		void RotateCharacterToFollowFloor(float);
 };

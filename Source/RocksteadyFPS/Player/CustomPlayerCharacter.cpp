@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CustomPlayerCharacter.h"
+#include "CustomCharacterMovementComponent.h"
 
 ACustomPlayerCharacter::ACustomPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomCharacterMovementComponent>(ACustomPlayerCharacter::CharacterMovementComponentName))
@@ -50,12 +51,14 @@ void ACustomPlayerCharacter::Strafe(float nWalkStrength)
 
 void ACustomPlayerCharacter::MouseHorizontal(float nMouseStrength)
 {
-	AddControllerYawInput(nMouseStrength);
+	m_nYaw += nMouseStrength;
+	//AddControllerYawInput(nMouseStrength);
 }
 
 void ACustomPlayerCharacter::MouseVertical(float nMouseStrength)
 {
-	AddControllerPitchInput(nMouseStrength);
+	m_nPitch += nMouseStrength;
+	//AddControllerPitchInput(nMouseStrength);
 }
 
 void ACustomPlayerCharacter::Fire()
