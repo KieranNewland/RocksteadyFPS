@@ -28,5 +28,13 @@ public:
 
 public:
 	void InflictDamage(float);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+		float m_nMaxHealth = 10;
+
+	float m_nCurrentHealth;
+
+	void Kill();
 	
 };

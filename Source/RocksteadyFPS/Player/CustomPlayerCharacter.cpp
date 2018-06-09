@@ -25,6 +25,45 @@ void ACustomPlayerCharacter::Tick(float nDeltaTime)
 {
 	Super::Tick(nDeltaTime);
 
+	if (!m_bShooting)
+		return;
+
+	m_nTimeUntilShot -= nDeltaTime;
+
+	if (m_nTimeUntilShot > 0)
+		return;
+
+	SpawnProjectile();
+	m_nTimeUntilShot = 0.1f;
+}
+
+void ACustomPlayerCharacter::SpawnProjectile()
+{
+	UWorld* pWorld = GetWorld();
+	UCameraComponent* pCamera = FindComponentByClass<UCameraComponent>();
+
+	check(pCamera != nullptr);
+
+	FCollisionQueryParams pTraceParams = FCollisionQueryParams();
+	pTraceParams.AddIgnoredActor(this);
+	pTraceParams.TraceTag = TraceTag;
+
+	FHitResult pHitResult = FHitResult();
+	if (!pWorld->LineTraceSingleByChannel(pHitResult, pCamera->GetComponentLocation(), pCamera->GetComponentLocation() + pCamera->GetForwardVector() * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("Did not hit target"));
+		return;
+	}
+
+	AActor* pActor = pHitResult.GetActor();
+
+	if (!pActor->IsA<AEnemyCharacter>())
+		return;
+
+	AEnemyCharacter* pEnemy = (AEnemyCharacter*)pActor;
+	pEnemy->InflictDamage(1);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
 }
 
 // Called to bind functionality to input
@@ -40,6 +79,9 @@ void ACustomPlayerCharacter::SetupPlayerInputComponent(UInputComponent* pPlayerI
 
 	pPlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	pPlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	pPlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACustomPlayerCharacter::BeginShooting);
+	pPlayerInputComponent->BindAction("Fire", IE_Released, this, &ACustomPlayerCharacter::EndShooting);
 
 	pPlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACustomPlayerCharacter::BeginCrouch);
 	pPlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACustomPlayerCharacter::EndCrouch);
@@ -62,33 +104,18 @@ void ACustomPlayerCharacter::MouseHorizontal(float nMouseStrength)
 
 void ACustomPlayerCharacter::MouseVertical(float nMouseStrength)
 {
-	m_nPitch += nMouseStrength;
+	m_nPitch = FMath::Clamp<float>(m_nPitch + nMouseStrength, -80, 80);
 }
 
-void ACustomPlayerCharacter::SpawnProjectile(FVector pSpawnPosition, FVector pSpawnDirection)
+void ACustomPlayerCharacter::BeginShooting()
 {
-	UWorld* pWorld = GetWorld();
+	m_bShooting = true;
+	m_nTimeUntilShot = 0;
+}
 
-	FCollisionQueryParams pTraceParams = FCollisionQueryParams();
-	pTraceParams.AddIgnoredActor(this);
-	pTraceParams.TraceTag = TraceTag;
-
-	FHitResult pHitResult = FHitResult();
-	if (!pWorld->LineTraceSingleByChannel(pHitResult, pSpawnPosition, pSpawnPosition + pSpawnDirection * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("Did not hit target"));
-		return;
-	}
-
-	AActor* pActor = pHitResult.GetActor();
-
-	if (!pActor->IsA<AEnemyCharacter>())
-		return;
-
-	AEnemyCharacter* pEnemy = (AEnemyCharacter*)pActor;
-	pEnemy->InflictDamage(1);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
+void ACustomPlayerCharacter::EndShooting()
+{
+	m_bShooting = false;
 }
 
 void ACustomPlayerCharacter::BeginCrouch()

@@ -16,6 +16,7 @@ void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	m_nCurrentHealth = m_nMaxHealth;
 }
 
 // Called every frame
@@ -34,5 +35,15 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AEnemyCharacter::InflictDamage(float nDamage)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, TEXT("Hit enemy"));
+	m_nCurrentHealth -= nDamage;
+
+	GEngine->AddOnScreenDebugMessage(-1, 0.3f, FColor::White, FString::Printf(TEXT("Hit enemy %f"), m_nCurrentHealth));
+
+	if (m_nCurrentHealth <= 0)
+		Kill();
+}
+
+void AEnemyCharacter::Kill()
+{
+	SetActorHiddenInGame(true);
 }

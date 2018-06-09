@@ -40,16 +40,25 @@ private:
 	void BeginCrouch();
 	void EndCrouch();
 
-	//Mouse
+	//Aiming
 	void MouseHorizontal(float);
 	void MouseVertical(float);
 
-	UFUNCTION(BlueprintCallable)
-		void SpawnProjectile(FVector pSpawnPosition, FVector pSpawnDirection);
+	float m_nPitch;
+	float m_nYaw;
+
+	//Shooting TODO - Move to Gun class
+	void BeginShooting();
+	void EndShooting();
+
+	void SpawnProjectile();
 
 	UPROPERTY(EditDefaultsOnly)
 		float m_nShotRange = 100000;
 
-	float m_nPitch;
-	float m_nYaw;
+	UFUNCTION(BlueprintCallable)
+		bool isShooting() { return m_bShooting; }
+
+	bool m_bShooting;
+	float m_nTimeUntilShot;
 };

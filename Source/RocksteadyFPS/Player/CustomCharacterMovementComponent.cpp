@@ -2,6 +2,14 @@
 
 #include "CustomCharacterMovementComponent.h"
 
+void UCustomCharacterMovementComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	SetWalkableFloorAngle(90);
+	bMaintainHorizontalGroundVelocity = false;
+}
+
 void UCustomCharacterMovementComponent::OnMovementUpdated(float nDelta, const FVector& pOldLocation, const FVector& pOldVelocity)
 {
 	Super::OnMovementUpdated(nDelta, pOldLocation, pOldVelocity);
@@ -18,23 +26,9 @@ void UCustomCharacterMovementComponent::RotateCharacterToFollowFloor(float nDelt
 	ACustomPlayerCharacter* pCustomCharacter = (ACustomPlayerCharacter*)GetCharacterOwner();
 	AController* pController = pCustomCharacter->Controller;
 
-	//Make sure we're checking below the rotated feet
-	const FVector pUpVector = pController->GetControlRotation().Quaternion() * FVector::UpVector;
-	const FVector pOurPosition = GetActorFeetLocation();
-	const FVector pStartPosition = pOurPosition + pUpVector * MaxStepHeight;
-	const FVector pEndPosition = pOurPosition - pUpVector * MaxStepHeight;
-
-	//Sphere trace below the feet for the floor
-	FCollisionQueryParams pCollisionParams = FCollisionQueryParams();
-	pCollisionParams.AddIgnoredActor(GetOwner());
-
-	FHitResult pOutHit = FHitResult();
-	if (pWorld->SweepSingleByChannel(pOutHit, pStartPosition, pEndPosition, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(30), pCollisionParams))
-		GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::Green, TEXT("Above actor ") + pOutHit.GetActor()->GetActorLabel());
-	else
-		GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::Red, TEXT("Didn't hit ground"));
-
-	const FVector pNormal = pOutHit.ImpactNormal;
+	//Get the normal of the floor below our feet
+	const FVector pNormal = CurrentFloor.HitResult.Normal;
+	GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::White, FString::Printf(TEXT("Normal: %f, %f, %f"), pNormal.X, pNormal.Y, pNormal.Z));
 
 	//Smooth our current floor rotation to the new desired floor rotation
 	const FQuat pDesiredFloorRotation = FQuat::FindBetweenNormals(FVector::UpVector, pNormal);
