@@ -37,6 +37,9 @@ private:
 	void WalkForward(float);
 	void Strafe(float);
 
+	void BeginCrouch();
+	void EndCrouch();
+
 	//Mouse
 	void MouseHorizontal(float);
 	void MouseVertical(float);

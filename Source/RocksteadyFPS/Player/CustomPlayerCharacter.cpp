@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CustomPlayerCharacter.h"
+#include "../Enemy/EnemyCharacter.h"
 #include "CustomCharacterMovementComponent.h"
 
 const FName TraceTag("MyTraceTag");
@@ -39,6 +40,9 @@ void ACustomPlayerCharacter::SetupPlayerInputComponent(UInputComponent* pPlayerI
 
 	pPlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	pPlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	pPlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACustomPlayerCharacter::BeginCrouch);
+	pPlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACustomPlayerCharacter::EndCrouch);
 }
 
 void ACustomPlayerCharacter::WalkForward(float nWalkStrength)
@@ -70,8 +74,30 @@ void ACustomPlayerCharacter::SpawnProjectile(FVector pSpawnPosition, FVector pSp
 	pTraceParams.TraceTag = TraceTag;
 
 	FHitResult pHitResult = FHitResult();
-	if( pWorld->LineTraceSingleByChannel(pHitResult, pSpawnPosition, pSpawnPosition + pSpawnDirection * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
-	else
+	if (!pWorld->LineTraceSingleByChannel(pHitResult, pSpawnPosition, pSpawnPosition + pSpawnDirection * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
+	{
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("Did not hit target"));
+		return;
+	}
+
+	AActor* pActor = pHitResult.GetActor();
+
+	if (!pActor->IsA<AEnemyCharacter>())
+		return;
+
+	AEnemyCharacter* pEnemy = (AEnemyCharacter*)pActor;
+	pEnemy->InflictDamage(1);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
+}
+
+void ACustomPlayerCharacter::BeginCrouch()
+{
+	Crouch(true);
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, TEXT("Crouching"));
+}
+
+void ACustomPlayerCharacter::EndCrouch()
+{
+	UnCrouch(true);
 }
