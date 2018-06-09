@@ -26,6 +26,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	//Controls
 	float GetPitch() { return m_nPitch; }
 	float GetYaw() { return m_nYaw; }
 
@@ -38,7 +40,12 @@ private:
 	//Mouse
 	void MouseHorizontal(float);
 	void MouseVertical(float);
-	void Fire();
+
+	UFUNCTION(BlueprintCallable)
+		void SpawnProjectile(FVector pSpawnPosition, FVector pSpawnDirection);
+
+	UPROPERTY(EditDefaultsOnly)
+		float m_nShotRange = 100000;
 
 	float m_nPitch;
 	float m_nYaw;

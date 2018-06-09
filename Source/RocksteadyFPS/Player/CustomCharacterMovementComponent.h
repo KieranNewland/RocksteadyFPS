@@ -16,6 +16,12 @@ class ROCKSTEADYFPS_API UCustomCharacterMovementComponent : public UCharacterMov
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+		float m_nSnapRotationToFloorSpeed = 0.3f;
+
+	UPROPERTY(Transient)
+		FQuat m_pLastFloorRotation;
+
 		void OnMovementUpdated(float, const FVector&, const FVector&) override;
 	
 		void RotateCharacterToFollowFloor(float);

@@ -3,6 +3,8 @@
 #include "CustomPlayerCharacter.h"
 #include "CustomCharacterMovementComponent.h"
 
+const FName TraceTag("MyTraceTag");
+
 ACustomPlayerCharacter::ACustomPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomCharacterMovementComponent>(ACustomPlayerCharacter::CharacterMovementComponentName))
 {
@@ -14,6 +16,7 @@ void ACustomPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	GetWorld()->DebugDrawTraceTag = TraceTag;
 }
 
 // Called every frame
@@ -36,7 +39,6 @@ void ACustomPlayerCharacter::SetupPlayerInputComponent(UInputComponent* pPlayerI
 
 	pPlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	pPlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	pPlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACustomPlayerCharacter::Fire);
 }
 
 void ACustomPlayerCharacter::WalkForward(float nWalkStrength)
@@ -52,16 +54,24 @@ void ACustomPlayerCharacter::Strafe(float nWalkStrength)
 void ACustomPlayerCharacter::MouseHorizontal(float nMouseStrength)
 {
 	m_nYaw += nMouseStrength;
-	//AddControllerYawInput(nMouseStrength);
 }
 
 void ACustomPlayerCharacter::MouseVertical(float nMouseStrength)
 {
 	m_nPitch += nMouseStrength;
-	//AddControllerPitchInput(nMouseStrength);
 }
 
-void ACustomPlayerCharacter::Fire()
+void ACustomPlayerCharacter::SpawnProjectile(FVector pSpawnPosition, FVector pSpawnDirection)
 {
+	UWorld* pWorld = GetWorld();
 
+	FCollisionQueryParams pTraceParams = FCollisionQueryParams();
+	pTraceParams.AddIgnoredActor(this);
+	pTraceParams.TraceTag = TraceTag;
+
+	FHitResult pHitResult = FHitResult();
+	if( pWorld->LineTraceSingleByChannel(pHitResult, pSpawnPosition, pSpawnPosition + pSpawnDirection * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("Did not hit target"));
 }

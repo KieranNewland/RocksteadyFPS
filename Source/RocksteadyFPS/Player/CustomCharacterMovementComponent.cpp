@@ -31,7 +31,7 @@ void UCustomCharacterMovementComponent::RotateCharacterToFollowFloor(float nDelt
 	pCollisionParams.AddIgnoredActor(GetOwner());
 
 	FHitResult pOutHit = FHitResult();
-	if (pWorld->SweepSingleByChannel(pOutHit, pStartPosition, pEndPosition, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(20), pCollisionParams))
+	if (pWorld->SweepSingleByChannel(pOutHit, pStartPosition, pEndPosition, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(40), pCollisionParams))
 		GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::Green, TEXT("Above actor ") + pOutHit.GetActor()->GetActorLabel());
 	else
 		GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::Red, TEXT("Didn't hit ground"));
@@ -43,8 +43,9 @@ void UCustomCharacterMovementComponent::RotateCharacterToFollowFloor(float nDelt
 	FQuat pFloorRotation = FQuat::FindBetweenNormals(FVector::UpVector, pNormal);
 
 	//Smooth our rotation to the new desired floor rotation
-
-	FQuat pFinalRotation = pFloorRotation * pAimRotator.Quaternion();
+	FQuat pSmoothFloorRotation = FQuat::Slerp(m_pLastFloorRotation, pFloorRotation, m_nSnapRotationToFloorSpeed * nDelta);
+	FQuat pFinalRotation = pSmoothFloorRotation * pAimRotator.Quaternion();
+	m_pLastFloorRotation = pSmoothFloorRotation;
 
 	//Set the controller rotation by the new quaternion
 	pController->SetControlRotation(pFinalRotation.Rotator());
