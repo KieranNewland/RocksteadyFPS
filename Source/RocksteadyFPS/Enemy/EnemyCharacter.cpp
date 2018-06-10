@@ -45,5 +45,5 @@ void AEnemyCharacter::InflictDamage(float nDamage)
 
 void AEnemyCharacter::Kill()
 {
-	SetActorHiddenInGame(true);
+	Destroy();
 }

@@ -28,7 +28,6 @@ void UCustomCharacterMovementComponent::RotateCharacterToFollowFloor(float nDelt
 
 	//Get the normal of the floor below our feet
 	const FVector pNormal = CurrentFloor.HitResult.Normal;
-	GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::White, FString::Printf(TEXT("Normal: %f, %f, %f"), pNormal.X, pNormal.Y, pNormal.Z));
 
 	//Smooth our current floor rotation to the new desired floor rotation
 	const FQuat pDesiredFloorRotation = FQuat::FindBetweenNormals(FVector::UpVector, pNormal);
