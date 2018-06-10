@@ -17,7 +17,11 @@ void ACustomPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//Use the PlayerStart rotation
+	m_nYaw = GetActorRotation().Euler().Z;
 	GetWorld()->DebugDrawTraceTag = TraceTag;
+
+	m_pCamera = FindComponentByClass<UCameraComponent>();
 }
 
 // Called every frame
@@ -50,10 +54,7 @@ void ACustomPlayerCharacter::SpawnProjectile()
 
 	FHitResult pHitResult = FHitResult();
 	if (!pWorld->LineTraceSingleByChannel(pHitResult, pCamera->GetComponentLocation(), pCamera->GetComponentLocation() + pCamera->GetForwardVector() * m_nShotRange, ECC_GameTraceChannel1, pTraceParams))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("Did not hit target"));
 		return;
-	}
 
 	AActor* pActor = pHitResult.GetActor();
 
@@ -62,8 +63,6 @@ void ACustomPlayerCharacter::SpawnProjectile()
 
 	AEnemyCharacter* pEnemy = (AEnemyCharacter*)pActor;
 	pEnemy->InflictDamage(1);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("Hit target: ") + pHitResult.GetActor()->GetActorLabel());
 }
 
 // Called to bind functionality to input
@@ -89,12 +88,26 @@ void ACustomPlayerCharacter::SetupPlayerInputComponent(UInputComponent* pPlayerI
 
 void ACustomPlayerCharacter::WalkForward(float nWalkStrength)
 {
-	AddMovementInput(GetActorForwardVector(), nWalkStrength);
+	FVector pActorForward = ActorToWorldDirection(m_pCamera->GetForwardVector());
+
+	AddMovementInput(pActorForward, nWalkStrength);
 }
 
 void ACustomPlayerCharacter::Strafe(float nWalkStrength)
 {
-	AddMovementInput(GetActorRightVector(), nWalkStrength);
+	FVector pActorRight = ActorToWorldDirection(m_pCamera->GetRightVector());
+
+	AddMovementInput(pActorRight, nWalkStrength);
+}
+
+FVector ACustomPlayerCharacter::ActorToWorldDirection(FVector pDirection)
+{
+	//We need to convert the direction from actor coordinates to consider the normal of the floor
+	UCustomCharacterMovementComponent* pMovementComponent = (UCustomCharacterMovementComponent*)GetCharacterMovement();
+	FVector pLastFloorRotation = pMovementComponent->GetLastFloorRotation() * FVector::UpVector;
+	FQuat pDifference = FQuat::FindBetweenNormals(pLastFloorRotation, FVector::UpVector);
+
+	return pDifference * pDirection;
 }
 
 void ACustomPlayerCharacter::MouseHorizontal(float nMouseStrength)
@@ -104,7 +117,7 @@ void ACustomPlayerCharacter::MouseHorizontal(float nMouseStrength)
 
 void ACustomPlayerCharacter::MouseVertical(float nMouseStrength)
 {
-	m_nPitch = FMath::Clamp<float>(m_nPitch + nMouseStrength, -80, 80);
+	m_nPitch += nMouseStrength;
 }
 
 void ACustomPlayerCharacter::BeginShooting()

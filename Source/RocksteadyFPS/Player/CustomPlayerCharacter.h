@@ -31,7 +31,11 @@ public:
 	float GetPitch() { return m_nPitch; }
 	float GetYaw() { return m_nYaw; }
 
+	void SetPitch(float nPitch) { m_nPitch = nPitch; }
+
 private:
+
+	UCameraComponent * m_pCamera;
 
 	//Movement
 	void WalkForward(float);
@@ -39,6 +43,8 @@ private:
 
 	void BeginCrouch();
 	void EndCrouch();
+
+	FVector ActorToWorldDirection(FVector pDirection);
 
 	//Aiming
 	void MouseHorizontal(float);

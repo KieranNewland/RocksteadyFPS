@@ -15,13 +15,15 @@ class ROCKSTEADYFPS_API UCustomCharacterMovementComponent : public UCharacterMov
 {
 	GENERATED_BODY()
 
-		void InitializeComponent() override;
+public:
+	void InitializeComponent() override;
+
+	FQuat GetLastFloorRotation() { return m_pLastFloorRotation; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
 		float m_nSnapRotationToFloorSpeed = 0.3f;
 
-	UPROPERTY(Transient)
 		FQuat m_pLastFloorRotation;
 
 		void OnMovementUpdated(float, const FVector&, const FVector&) override;

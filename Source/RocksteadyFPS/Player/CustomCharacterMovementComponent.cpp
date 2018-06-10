@@ -34,9 +34,17 @@ void UCustomCharacterMovementComponent::RotateCharacterToFollowFloor(float nDelt
 	const FQuat pDesiredFloorRotation = FQuat::FindBetweenNormals(FVector::UpVector, pNormal);
 	const FQuat pSmoothFloorRotation = FQuat::Slerp(m_pLastFloorRotation, pDesiredFloorRotation, m_nSnapRotationToFloorSpeed * nDelta);
 
+	//Clamp the pitch -  if pitch goes too far we think we're walking in the opposite direction as it takes from the horizontal direction
+	const FRotator pSmoothFloorRotator = pSmoothFloorRotation.Rotator();
+	float nFloorPitch = pSmoothFloorRotator.Pitch;
+	float nPlayerPitch = pCustomCharacter->GetPitch();
+
 	//Rotate our aim vector by the smoothed floor rotation - save the rotation so we can smooth next frame
-	const FRotator pAimRotator = FRotator(-pCustomCharacter->GetPitch(), pCustomCharacter->GetYaw(), 0);
+	const FRotator pAimRotator = FRotator(-nPlayerPitch, pCustomCharacter->GetYaw(), 0);
 	const FQuat pFinalRotation = pSmoothFloorRotation * pAimRotator.Quaternion();
+
+	//GEngine->AddOnScreenDebugMessage(-1, nDelta, FColor::Green, FString::Printf(TEXT("Final: %f, %f Pitch: %f, %f"), pFinalEuler.X, pFinalEuler.Y, nPlayerPitch, nFloorPitch));
+
 	m_pLastFloorRotation = pSmoothFloorRotation;
 
 	//Set the controller rotation by the new quaternion
